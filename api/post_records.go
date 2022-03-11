@@ -12,6 +12,8 @@ import (
 )
 
 // POST /records/{id}
+// if the record exists, the record is updated.
+// if the record doesn't exist, the record is created.
 func (a *API) PostRecords(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id := mux.Vars(r)["id"]

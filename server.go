@@ -11,6 +11,7 @@ import (
 	"github.com/temelpa/timetravel/service"
 )
 
+// logError logs all non-nil errors
 func logError(err error) {
 	if err != nil {
 		log.Printf("error: %v", err)

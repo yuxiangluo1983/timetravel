@@ -1,6 +1,6 @@
 # The Temelpa Take-Home Assignment
 
-Please create a __private__ fork of this repo, complete the steps, and once you
+Please create a __private__ version of this repo, complete the objectives, and once you
 are finished, send a link to your repo to us.
 
 # The Assignment
@@ -29,10 +29,10 @@ In this project, you'll make a simplified version of this system. At a high-leve
 1. Change the storage backend to sqlite, and persist the data across turning off and on the server.
 2. Add the time travel component so we can easily look up the state of each records at different timesteps.
 
-The sections below outline these two steps in more detail. You may use whatever libraries and tools
+The sections below outline these two objectives in more detail. You may use whatever libraries and tools
 you like to achieve this even as far as building this in an entirely different language.
 
-## Step 1: Switch To Sqlite
+## Objective: Switch To Sqlite
 
 The current implementation does not store the data. The data is lost once the server 
 process is killed. You should change the code so that all changes are persisted on 
@@ -41,10 +41,10 @@ to sqlite.
 Once you're done, the data should be persistent on to a sqlite file as the server 
 is running. The server should tolerate restarting the process without data loss.
 
-## Step 2: Add Time Travel
+## Objective: Add Time Travel
 
 This part is far more open-ended. You might need to make major changes across nearly
-all files of the codebase. You'll be adding full persistentence to the records. [Take a look 
+all files of the codebase. You'll be adding partial persistentence to the records. [Take a look 
 at these slides on persistent data structures to learn what that means](https://www.ics.uci.edu/~eppstein/261/s21w9.pdf).
 
 You should create a set of `/api/v2` endpoints that enable you to do run gets, creates, and updates. 
@@ -52,11 +52,11 @@ Updates should be able to add modifications on top of any pre-existing versions 
 There should be a way to get a list of the different versions too. Finally, `/api/v1` 
 should still work after these changes.
 
-# Reccomendations
+# Reccommendations
 
 We expect you to work as if this task was a normal project at work. So please write
 your code in a way that fits your intuitive notion of operating within best practices.
-Additionally, you should at the very least have a different commmit for each individual step, 
+Additionally, you should at the very least have a different commmit for each individual objective, 
 ideally more as you go through process of completing the take-home. Also we like
 to see your thought process and fixes as you make changes. So don't be afraid of
 committing code that you later edit. No need to squash those commits.

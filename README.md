@@ -42,15 +42,22 @@ Once you're done, the data should be persistent on to a sqlite file as the serve
 is running. The server should tolerate restarting the process without data loss.
 
 ## Objective: Add Time Travel
-
 This part is far more open-ended. You might need to make major changes across nearly
-all files of the codebase. You'll be adding partial persistentence to the records. [Take a look 
+all files of the codebase. You'll be adding persistentence to the records. 
+
+[Take a look 
 at these slides on persistent data structures to learn what that means](https://www.ics.uci.edu/~eppstein/261/s21w9.pdf).
+The slides outline a few different types of persistence but I'll leave it to you to identify which makes sense 
+for this problem. 
 
 You should create a set of `/api/v2` endpoints that enable you to do run gets, creates, and updates. 
-Updates should be able to add modifications on top of any pre-existing versions not just the latest. 
-There should be a way to get a list of the different versions too. Finally, `/api/v1` 
-should still work after these changes.
+Unlike in v1, records are now versioned. Full requirements: 
+
+- You should have endpoints that allow the api client to get records at different versions. (not just 
+the latest version). 
+- Updates should be able to add modifications on top of the latest version. 
+- There should be a way to get a list of the different versions too.
+- `/api/v1` should still work after these changes. 
 
 # Reccommendations
 
@@ -64,6 +71,16 @@ committing code that you later edit. No need to squash those commits.
 Many parts of the assignment is intentionally ambiguious. If you have a question, definitely
 reach out. But for many of these ambiguiuties, we want to see how you independently make
 software design decisions.
+
+# FAQ
+_Can I Use Another Language?_
+Definitely, we've had multiple people complete this assignment in Python and Java. You can pick whatever
+language you'd like although you should aim to replicate the functionality in the boilerplate. 
+
+_Did you really end up implementing something like this at Rainbow?_
+Yes, but unfortunately it wasn't as simple as this in practice. For insurance a number of requirements force us 
+to maintain historic records across many different object types. So in fact we implemented this across multiple different 
+tables in our database. 
 
 
 # Reference -- The Current API

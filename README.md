@@ -24,7 +24,8 @@ difference for the 4 months since they changed addresses. To do so accurately, w
 version of the records that we knew about them at the two points of time: at the time when the change happened
 and at the time when we were told of the change.
 
-In this project, you'll make a simplified version of this system. At a high-level your goal is to do two things:
+In this project, you'll make a simplified version of this system. We've implemented an in-memory key-value store with no history. 
+At a high-level your goal is to do two things to this existing codebase:
 
 1. Change the storage backend to sqlite, and persist the data across turning off and on the server.
 2. Add the time travel component so we can easily look up the state of each records at different timesteps.
@@ -45,19 +46,14 @@ is running. The server should tolerate restarting the process without data loss.
 This part is far more open-ended. You might need to make major changes across nearly
 all files of the codebase. You'll be adding persistentence to the records. 
 
-[Take a look 
-at these slides on persistent data structures to learn what that means](https://www.ics.uci.edu/~eppstein/261/s21w9.pdf).
-The slides outline a few different types of persistence but I'll leave it to you to identify which makes sense 
-for this problem. 
-
 You should create a set of `/api/v2` endpoints that enable you to do run gets, creates, and updates. 
 Unlike in v1, records are now versioned. Full requirements: 
 
 - You should have endpoints that allow the api client to get records at different versions. (not just 
 the latest version). 
-- Updates should be able to add modifications on top of the latest version. 
+- You should be able to add modifications on top of the latest version. 
 - There should be a way to get a list of the different versions too.
-- `/api/v1` should still work after these changes. 
+- `/api/v1` should still work after these changes with identical behavior as before.
 
 # Reccommendations
 

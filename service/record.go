@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/temelpa/timetravel/entity"
+	"github.com/rainbowmga/timetravel/entity"
 )
 
 var ErrRecordDoesNotExist = errors.New("record with that id does not exist")

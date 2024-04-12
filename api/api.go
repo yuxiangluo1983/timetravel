@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/temelpa/timetravel/service"
+	"github.com/rainbowmga/timetravel/service"
 )
 
 type API struct {

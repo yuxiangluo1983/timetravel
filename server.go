@@ -21,7 +21,7 @@ func logError(err error) {
 func main() {
 	router := mux.NewRouter()
 
-	service := service.NewPersistedRecordService("records.db")
+	service := service.NewPersistedRecordService("recordsWithVersion.db")
 	defer func() {
 	    service.Close()
 	}()
@@ -34,6 +34,13 @@ func main() {
 		logError(err)
 	})
 	api.CreateRoutes(apiRoute)
+
+	apiV2Route := router.PathPrefix("/api/v2").Subrouter()
+	apiV2Route.Path("/health").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		err := json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+		logError(err)
+	})
+	api.CreateV2Routes(apiV2Route)
 
 	address := "127.0.0.1:8000"
 	srv := &http.Server{

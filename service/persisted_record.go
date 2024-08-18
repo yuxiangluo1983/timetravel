@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/rainbowmga/timetravel/entity"
 	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
@@ -15,6 +17,7 @@ import (
 // PersistedRecordService is an implementation of RecordService based on sqlite for persistence.
 type PersistedRecordService struct {
 	sqlDb *sql.DB
+	latestVersions map[int]int64
 }
 
 func NewPersistedRecordService(dbName string) PersistedRecordService {
@@ -32,8 +35,10 @@ func NewPersistedRecordService(dbName string) PersistedRecordService {
 
 	if errors.Is(err, os.ErrNotExist) {
 		createTableSQL := `CREATE TABLE records (
-			"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,		
-			"data" TEXT
+			"id" integer NOT NULL,		
+			"version" integer NOT NULL,
+			"data" TEXT,
+			PRIMARY KEY ("id", "version")
 		  );` // SQL Statement for Create Table
 
 		log.Println("Create records table...")
@@ -47,6 +52,7 @@ func NewPersistedRecordService(dbName string) PersistedRecordService {
 
 	return PersistedRecordService {
 		sqlDb: sqliteDb,
+		latestVersions: make(map[int]int64),
 	}
 }
 
@@ -55,12 +61,21 @@ func (s * PersistedRecordService) Close() {
 }
 
 func (s *PersistedRecordService) ReadRecord(id int) entity.Record {
+	version, ok := s.latestVersions[id]
+	if !ok {
+		return entity.Record{}
+	}
+	return s.ReadRecordWithVersion(id, version)
+}
+
+func (s *PersistedRecordService) ReadRecordWithVersion(id int, version int64) entity.Record {
 	var jsonString string
-	if err := s.sqlDb.QueryRow("SELECT data from records where id = ?", id).Scan(&jsonString); err == nil {
+	if err := s.sqlDb.QueryRow("SELECT data from records where id = ? and version = ?", id, version).Scan(&jsonString); err == nil {
 		var data = make(map[string]string)
 		json.Unmarshal([]byte(jsonString), &data)
 		return entity.Record{
 			ID: id,
+			Ver: version,
 			Data: data,
 		}
 	}
@@ -77,28 +92,64 @@ func (s *PersistedRecordService) GetRecord(ctx context.Context, id int) (entity.
 	return record, nil
 }
 
+func (s *PersistedRecordService) GetAllRecords(ctx context.Context, id int) []entity.Record {
+	row, err := s.sqlDb.Query("SELECT * FROM records where id = ? ORDER BY version", id)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer row.Close()
+	
+	var records []entity.Record
+
+	for row.Next() { // Iterate and fetch the records from result cursor
+		var id int
+		var version string
+		var jsonString string
+		row.Scan(&id, &version, &jsonString)
+
+		ver, _ := strconv.ParseInt(version, 10, 64)
+		data := make(map[string]string)
+		json.Unmarshal([]byte(jsonString), &data)
+		records = append(records, entity.Record{
+			ID: id,
+			Ver: ver,
+			Data: data,
+		})
+	}
+
+	return records
+}
+
+func (s *PersistedRecordService) GetRecordsWithVersions(ctx context.Context, id int, versions []int64) []entity.Record {
+	var records []entity.Record
+	
+	for _, v := range versions {
+		records = append(records, s.ReadRecordWithVersion(id, v))
+	}
+
+	return records
+}
+
 func (s *PersistedRecordService) CreateRecord(ctx context.Context, record entity.Record) error {
 	id := record.ID
 	if id <= 0 {
 		return ErrRecordIDInvalid
 	}
 
-	existingRecord := s.ReadRecord(id)
-	if existingRecord.ID != 0 {
-		return ErrRecordAlreadyExists
-	}
-
         jsonString, err := json.Marshal(record.Data)
+	version := time.Now().Unix()
 
 	log.Println("Inserting record ...")
-	insertSQL := `INSERT INTO records(id, data) VALUES (?, ?)`
+	insertSQL := `INSERT INTO records(id, version, data) VALUES (?, ?, ?)`
 	statement, err := s.sqlDb.Prepare(insertSQL) // Prepare statement. 
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	_, err = statement.Exec(id, jsonString)
+	_, err = statement.Exec(id, version, jsonString)
 	if err != nil {
 		log.Fatalln(err.Error())
+	} else {
+		s.latestVersions[id] = version
 	}
 
 	return nil
@@ -119,16 +170,19 @@ func (s *PersistedRecordService) UpdateRecord(ctx context.Context, id int, updat
 	}
 
         jsonString, err := json.Marshal(entry.Data)
+	version := time.Now().Unix()
 
 	log.Println("Updating record ...")
-	updateSQL := `UPDATE records SET id=?, data=? WHERE id=?`
+	updateSQL := `UPDATE records SET id=?, version=?, data=? WHERE id=? and version=?`
 	statement, err := s.sqlDb.Prepare(updateSQL) // Prepare statement. 
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	_, err = statement.Exec(id, jsonString, id)
+	_, err = statement.Exec(id, version, jsonString, id, entry.Ver)
 	if err != nil {
 		log.Fatalln(err.Error())
+	} else {
+		s.latestVersions[id] = version
 	}
 
 	return entry.Copy(), nil

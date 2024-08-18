@@ -17,6 +17,12 @@ type RecordService interface {
 	// GetRecord will retrieve an record.
 	GetRecord(ctx context.Context, id int) (entity.Record, error)
 
+	// GetAllRecords will retrieve all versions of records.
+	GetAllRecords(ctx context.Context, id int) []entity.Record
+
+	// GetRecordsWithVersions will retrieve all specified versions of records.
+	GetRecordsWithVersions(ctx context.Context, id int, versions []int64) []entity.Record
+
 	// CreateRecord will insert a new record.
 	//
 	// If it a record with that id already exists it will fail.

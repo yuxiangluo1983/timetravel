@@ -21,7 +21,11 @@ func logError(err error) {
 func main() {
 	router := mux.NewRouter()
 
-	service := service.NewInMemoryRecordService()
+	service := service.NewPersistedRecordService("records.db")
+	defer func() {
+	    service.Close()
+	}()
+
 	api := api.NewAPI(&service)
 
 	apiRoute := router.PathPrefix("/api/v1").Subrouter()

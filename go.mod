@@ -1,4 +1,4 @@
-module github.com/rainbowmga/timetravel
+module github.com/yuxiangluo1983/timetravel
 
 go 1.17
 

@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/rainbowmga/timetravel/api"
-	"github.com/rainbowmga/timetravel/service"
+	"github.com/yuxiangluo1983/timetravel/api"
+	"github.com/yuxiangluo1983/timetravel/service"
 )
 
 // logError logs all non-nil errors

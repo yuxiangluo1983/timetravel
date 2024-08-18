@@ -14,7 +14,7 @@ var ErrRecordAlreadyExists = errors.New("record already exists")
 // Implements method to get, create, and update record data.
 type RecordService interface {
 
-	// GetRecord will retrieve an record.
+	// GetBasicRecord will retrieve an record.
 	GetRecord(ctx context.Context, id int) (entity.Record, error)
 
 	// GetAllRecords will retrieve all versions of records.

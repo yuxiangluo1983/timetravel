@@ -17,7 +17,6 @@ import (
 // PersistedRecordService is an implementation of RecordService based on sqlite for persistence.
 type PersistedRecordService struct {
 	sqlDb *sql.DB
-	latestVersions map[int]int64
 }
 
 func NewPersistedRecordService(dbName string) PersistedRecordService {
@@ -49,10 +48,9 @@ func NewPersistedRecordService(dbName string) PersistedRecordService {
 		statement.Exec() // Execute SQL Statements
 		log.Println("records table created")
 	}
-
+		
 	return PersistedRecordService {
 		sqlDb: sqliteDb,
-		latestVersions: make(map[int]int64),
 	}
 }
 
@@ -61,11 +59,12 @@ func (s * PersistedRecordService) Close() {
 }
 
 func (s *PersistedRecordService) ReadRecord(id int) entity.Record {
-	version, ok := s.latestVersions[id]
-	if !ok {
+	var version string
+	if err := s.sqlDb.QueryRow("SELECT MAX(version) from records where id = ? GROUP BY id", id).Scan(&version); err != nil {
 		return entity.Record{}
 	}
-	return s.ReadRecordWithVersion(id, version)
+	verNumber, _ := strconv.ParseInt(version, 10, 64)
+	return s.ReadRecordWithVersion(id, verNumber)
 }
 
 func (s *PersistedRecordService) ReadRecordWithVersion(id int, version int64) entity.Record {
@@ -82,20 +81,14 @@ func (s *PersistedRecordService) ReadRecordWithVersion(id int, version int64) en
 	return entity.Record{}
 }
 
-func (s *PersistedRecordService) GetRecord(ctx context.Context, id int) (entity.BasicRecord, error) {
+func (s *PersistedRecordService) GetRecord(ctx context.Context, id int) (entity.Record, error) {
 	record := s.ReadRecord(id)
 	if record.ID == 0 {
-		return entity.BasicRecord{}, ErrRecordDoesNotExist
+		return entity.Record{}, ErrRecordDoesNotExist
 	}
 
 	record = record.Copy() // copy is necessary so modifations to the record don't change the stored record
-
-	basicRecord := BasicRecord{
-		ID: record.ID,
-		Data: record.Data,
-	}
-
-	return basicRecord, nil
+	return record, nil
 }
 
 func (s *PersistedRecordService) GetAllRecords(ctx context.Context, id int) []entity.Record {
@@ -154,8 +147,6 @@ func (s *PersistedRecordService) CreateRecord(ctx context.Context, record entity
 	_, err = statement.Exec(id, version, jsonString)
 	if err != nil {
 		log.Fatalln(err.Error())
-	} else {
-		s.latestVersions[id] = version
 	}
 
 	return nil
@@ -187,8 +178,6 @@ func (s *PersistedRecordService) UpdateRecord(ctx context.Context, id int, updat
 	_, err = statement.Exec(id, version, jsonString, id, entry.Ver)
 	if err != nil {
 		log.Fatalln(err.Error())
-	} else {
-		s.latestVersions[id] = version
 	}
 
 	return entry.Copy(), nil

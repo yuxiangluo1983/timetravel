@@ -34,8 +34,12 @@ func (a *API) GetRecords(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	basicRecord := entity.BasicRecord{
+		ID: record.ID,
+		Data: record.Data,
+	}
 	
-	err = writeJSON(w, record, http.StatusOK)
+	err = writeJSON(w, basicRecord, http.StatusOK)
 	logError(err)
 }
 

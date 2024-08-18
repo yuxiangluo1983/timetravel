@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/yuxiangluo1983/timetravel/entity"
 )
 
 // GET /records/{id}
@@ -33,6 +34,7 @@ func (a *API) GetRecords(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	
 	err = writeJSON(w, record, http.StatusOK)
 	logError(err)
 }

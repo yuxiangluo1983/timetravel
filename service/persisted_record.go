@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/rainbowmga/timetravel/entity"
+	"github.com/yuxiangluo1983/timetravel/entity"
 	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
 )
 
@@ -82,14 +83,20 @@ func (s *PersistedRecordService) ReadRecordWithVersion(id int, version int64) en
 	return entity.Record{}
 }
 
-func (s *PersistedRecordService) GetRecord(ctx context.Context, id int) (entity.Record, error) {
+func (s *PersistedRecordService) GetRecord(ctx context.Context, id int) (entity.BasicRecord, error) {
 	record := s.ReadRecord(id)
 	if record.ID == 0 {
-		return entity.Record{}, ErrRecordDoesNotExist
+		return entity.BasicRecord{}, ErrRecordDoesNotExist
 	}
 
 	record = record.Copy() // copy is necessary so modifations to the record don't change the stored record
-	return record, nil
+
+	basicRecord := BasicRecord{
+		ID: record.ID,
+		Data: record.Data,
+	}
+
+	return basicRecord, nil
 }
 
 func (s *PersistedRecordService) GetAllRecords(ctx context.Context, id int) []entity.Record {
